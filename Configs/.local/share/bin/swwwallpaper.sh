@@ -1,12 +1,8 @@
 #!/usr/bin/env sh
 
 
-#// lock instance
-
-lockFile="/tmp/hyde$(id -u)$(basename ${0}).lock"
-[ -e "${lockFile}" ] && echo "An instance of the script is already running..." && exit 1
-touch "${lockFile}"
-trap 'rm -f ${lockFile}' EXIT
+# Check if the script is already running
+pgrep -cf "${0##*/}" | grep -qv 1 && echo "An instance of the script is already running..." && exit 1
 
 
 #// define functions
