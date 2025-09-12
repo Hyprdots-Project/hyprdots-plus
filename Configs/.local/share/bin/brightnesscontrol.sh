@@ -99,13 +99,8 @@ decrease) # decrease the backlight
         step=1
     fi
 
-    if [[ $(get_brightness) -le 1 ]]; then
-        brightnessctl set ${step}%
-        $use_swayosd && exit 0
-    else
-        $use_swayosd && swayosd-client --brightness lower "$step" && exit 0
-        brightnessctl set ${step}%-
-    fi
+    $use_swayosd && swayosd-client --brightness lower "$step" && exit 0
+    brightnessctl set ${step}%-
 
     [ "$notify" = true ] && send_notification ;;
 esac
