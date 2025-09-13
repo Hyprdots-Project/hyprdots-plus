@@ -25,13 +25,11 @@
 <br>
 
  <div>
-<h1>  <strong align="center" >⚠️ Deprecation Notice:</strong><br> </h1>
-   <h3> This repository is not maintained anymore. <br>
+<h1>  <strong align="center" >⚠️ Based Fork Notice:</strong><br> </h1>
+   <h3> This repository is poorly maintained and probably unstable, install at your own risk! <br>
     Please refer to <strong><a href="https://github.com/Hyde-project/hyde" style="color: #d35400; text-decoration: underline;">Hyde-project/hyde</a> </strong>for the latest updates and contributions.</h3>
 </div>
-
-
-<!--
+<h1>What the Sigma?</h1>
 
 <br>
 
