@@ -23,7 +23,7 @@ if pkg_installed spotify-launcher && pkg_installed spicetify-cli ; then
     if [ "$(spicetify config | awk '{if ($1=="color_scheme") print $2}')" != "Wallbash" ] || [[ "${*}" == *"--reset"*  ]] ; then
         spicetify &> /dev/null
         mkdir -p ~/.config/spotify
-        ouch ~/.config/spotify/prefs
+        touch ~/.config/spotify/prefs
         sptfyConf=$(spicetify -c)
         spotfy_flags='--ozone-platform=wayland'
         sed -i -e "/^prefs_path/ s+=.*$+= $HOME/.config/spotify/prefs+g" \
