@@ -113,14 +113,12 @@ fi
 readarray -t cursorPostion < <(hyprctl cursorpos -j | jq -r '.x,.y')
 readarray -t monitorResolution < <(hyprctl -j monitors | jq '.[] | select(.focused==true) | .width,.height,.scale,.x,.y')
 readarray -t resolutionOffset < <(hyprctl -j monitors | jq -r '.[] | select(.focused==true).reserved | map(tostring) | join("\n")') # this is the offest caused by the waybar reserved area
-
 monitorResolution=( $(echo "${monitorResolution[@]}" | sed "s/\.//") )
-monitorResolution=( ${monitorResolution[@]#0} )
-monitorResolution[5]=$(( ${monitorResolution[0]} * 100 / ${monitorResolution[2]} )) # scaled width
-monitorResolution[6]=$(( ${monitorResolution[1]} * 100 / ${monitorResolution[2]} )) # scaled height
-cursorOffset[0]="$(( ${cursorPostion[0]} - ${monitorResolution[3]} ))"
-cursorOffset[1]="$(( ${cursorPostion[1]} - ${monitorResolution[4]} ))"
-
+monitorResolution[2]=${monitorResolution[2]#0}
+monitorResolution+=($(( ${monitorResolution[0]} * 100 / ${monitorResolution[2]} ))) # scaled width
+monitorResolution+=($(( ${monitorResolution[1]} * 100 / ${monitorResolution[2]} ))) # scaled height
+cursorOffset+=($(( ${cursorPostion[0]} - ${monitorResolution[3]} )))
+cursorOffset+=($(( ${cursorPostion[1]} - ${monitorResolution[4]} )))
 
 #// extra fns
 
@@ -167,4 +165,3 @@ set_hash()
     local hashImage="${1}"
     "${hashMech}" "${hashImage}" | awk '{print $1}'
 }
-
