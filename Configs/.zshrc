@@ -1,9 +1,6 @@
 # Oh-my-zsh installation path
 ZSH=/usr/share/oh-my-zsh/
 
-# Powerlevel10k theme path
-source /usr/share/zsh-theme-powerlevel10k/powerlevel10k.zsh-theme
-
 # List of plugins used
 plugins=()
 source $ZSH/oh-my-zsh.sh
@@ -82,8 +79,9 @@ alias .5='cd ../../../../..'
 # Always mkdir a path (this doesn't inhibit functionality to make a single dir)
 alias mkdir='mkdir -p'
 
-# To customize prompt, run `p10k configure` or edit ~/.p10k.zsh
-[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+# Starship prompt config
+export STARSHIP_CONFIG="$HOME/.config/starship/starship.toml"
+eval "$(starship init zsh)"
 
 # Display Pokemon
 pokemon-colorscripts --no-title -r 1,3,6
