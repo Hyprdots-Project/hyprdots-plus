@@ -1,6 +1,7 @@
 set -g fish_greeting
 
 if status is-interactive
+    set -gx STARSHIP_CONFIG "$HOME/starship/starship.toml"
     starship init fish | source
 end
 
