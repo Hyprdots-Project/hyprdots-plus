@@ -4,7 +4,7 @@
 #|------/ /--| Description: Activate the system services. |------/ /--|#
 #|-----/ /---| Author: Marek Čupr (cupr.marek2@gmail.com) |-----/ /---|#
 #|----/ /----|--------------------------------------------|----/ /----|#
-#|---/ /-----| Version: 1.1                               |---/ /-----|#
+#|---/ /-----| Version: 1.0                               |---/ /-----|#
 #|--/ /------| Created: 2025-09-18                        |--/ /------|#
 #|-/ /-------| Last Updated: 2025-09-18                   |-/ /-------|#
 #|/ /--------+--------------------------------------------+/ /--------|#
@@ -19,7 +19,7 @@ DOC
 # import shared utilities #
 #-------------------------#
 if ! source "$(dirname "$(realpath "$0")")/shared_utils.sh"; then
-  printf '%b\n' "\033[0;31m[ERROR]\033[0m Failed to source 'shared_utils.sh'!" >&2
+  printf '%b\n' "\033[0;31m[ERROR]\033[0m Failed to source the 'shared_utils.sh' file!" >&2
   exit 1
 fi
 

@@ -1,0 +1,11 @@
+# --------------------------------------------------- // Zsh plugins
+git                                                    # aliases and completions for git
+https://github.com/chrissicool/zsh-256color            # extra 256 colors for terminal
+https://github.com/zsh-users/zsh-autosuggestions       # command suggestions when typing
+https://github.com/zsh-users/zsh-syntax-highlighting   # syntax highlighting for commands
+sudo                                                   # press esc twice to prepend sudo
+
+# --------------------------------------------------- // Other options (uncomment to enable)
+# https://github.com/zsh-users/zsh-completions         # press tab to complete commands
+# python                                               # aliases and completions for python
+# zsh-interactive-cd                                   # press tab to change dir with fzf

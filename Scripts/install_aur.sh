@@ -20,7 +20,7 @@ DOC
 # import shared utilities #
 #-------------------------#
 if ! source "$(dirname "$(realpath "$0")")/shared_utils.sh"; then
-  printf '%b\n' "\033[0;31m[ERROR]\033[0m Failed to source 'shared_utils.sh'!" >&2
+  printf '%b\n' "\033[0;31m[ERROR]\033[0m Failed to source the 'shared_utils.sh' file!" >&2
   exit 1
 fi
 
@@ -56,7 +56,7 @@ if [[ ! -d "$AUR_DIR" ]]; then
     echo -e "[Desktop Entry]\nIcon=default-folder-git" > "$AUR_DIR/.directory"
     print_success "Cloned the '$aur_helper' AUR helper to '$AUR_DIR'."
   else
-    print_error "Failed to clone the '$aur_helper' AUR helper!"
+    print_error "Failed to clone the '$aur_helper' AUR helper to '$AUR_DIR'!"
     exit $EXIT_FAILURE
   fi
 else
