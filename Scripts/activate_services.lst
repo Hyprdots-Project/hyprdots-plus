@@ -1,0 +1,4 @@
+# --------------------------------------------------- // System services
+bluetooth                                              # service for bluetooth devices
+NetworkManager                                         # service for network connections
+sddm                                                   # display manager for linux
