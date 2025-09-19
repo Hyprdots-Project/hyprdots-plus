@@ -110,6 +110,15 @@ if printenv HYPRLAND_INSTANCE_SIGNATURE &> /dev/null; then
     export hypr_width="$(hyprctl -j getoption general:border_size | jq '.int')"
 fi
 
+readarray -t cursorPostion < <(hyprctl cursorpos -j | jq -r '.x,.y')
+readarray -t monitorResolution < <(hyprctl -j monitors | jq '.[] | select(.focused==true) | .width,.height,.scale,.x,.y')
+readarray -t resolutionOffset < <(hyprctl -j monitors | jq -r '.[] | select(.focused==true).reserved | map(tostring) | join("\n")') # this is the offest caused by the waybar reserved area
+monitorResolution=( $(echo "${monitorResolution[@]}" | sed "s/\.//") )
+monitorResolution[2]=${monitorResolution[2]#0}
+monitorResolution+=($(( ${monitorResolution[0]} * 100 / ${monitorResolution[2]} ))) # scaled width
+monitorResolution+=($(( ${monitorResolution[1]} * 100 / ${monitorResolution[2]} ))) # scaled height
+cursorOffset+=($(( ${cursorPostion[0]} - ${monitorResolution[3]} )))
+cursorOffset+=($(( ${cursorPostion[1]} - ${monitorResolution[4]} )))
 
 #// extra fns
 
@@ -156,4 +165,3 @@ set_hash()
     local hashImage="${1}"
     "${hashMech}" "${hashImage}" | awk '{print $1}'
 }
-

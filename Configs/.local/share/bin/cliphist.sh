@@ -12,30 +12,24 @@ r_scale="configuration {font: \"JetBrainsMono Nerd Font ${rofiScale}\";}"
 wind_border=$((hypr_border * 3 / 2))
 elem_border=$([ $hypr_border -eq 0 ] && echo "5" || echo $hypr_border)
 
-# Evaluate spawn position
-readarray -t curPos < <(hyprctl cursorpos -j | jq -r '.x,.y')
-readarray -t monRes < <(hyprctl -j monitors | jq '.[] | select(.focused==true) | .width,.height,.scale,.x,.y')
-readarray -t offRes < <(hyprctl -j monitors | jq -r '.[] | select(.focused==true).reserved | map(tostring) | join("\n")')
-monRes[2]="$(echo "${monRes[2]}" | sed "s/\.//")"
-monRes[0]="$(( ${monRes[0]} * 100 / ${monRes[2]} ))"
-monRes[1]="$(( ${monRes[1]} * 100 / ${monRes[2]} ))"
-curPos[0]="$(( ${curPos[0]} - ${monRes[3]} ))"
-curPos[1]="$(( ${curPos[1]} - ${monRes[4]} ))"
+# I don't know if the resolutionOffset indexes are correct.
+# https://wiki.hypr.land/Configuring/Monitors/#custom-reserved-area
+# but that's how they are so that's how im leaving it
 
-if [ "${curPos[0]}" -ge "$((${monRes[0]} / 2))" ] ; then
+if [ "${cursorOffset[0]}" -ge "$((${monitorResolution[5]} / 2))" ] ; then
     x_pos="east"
-    x_off="-$(( ${monRes[0]} - ${curPos[0]} - ${offRes[2]} ))"
+    x_off="-$(( ${monitorResolution[5]} - ${cursorOffset[0]} - ${resolutionOffset[2]} ))" 
 else
     x_pos="west"
-    x_off="$(( ${curPos[0]} - ${offRes[0]} ))"
+    x_off="$(( ${cursorOffset[0]} - ${resolutionOffset[0]} ))"
 fi
 
-if [ "${curPos[1]}" -ge "$((${monRes[1]} / 2))" ] ; then
+if [ "${cursorOffset[1]}" -ge "$((${monitorResolution[6]} / 2))" ] ; then
     y_pos="south"
-    y_off="-$(( ${monRes[1]} - ${curPos[1]} - ${offRes[3]} ))"
+    y_off="-$(( ${monitorResolution[6]} - ${cursorOffset[1]} - ${resolutionOffset[3]} ))"
 else
     y_pos="north"
-    y_off="$(( ${curPos[1]} - ${offRes[1]} ))"
+    y_off="$(( ${cursorOffset[1]} - ${resolutionOffset[1]} ))"
 fi
 
 r_override="window{location:${x_pos} ${y_pos};anchor:${x_pos} ${y_pos};x-offset:${x_off}px;y-offset:${y_off}px;border:${hypr_width}px;border-radius:${wind_border}px;} wallbox{border-radius:${elem_border}px;} element{border-radius:${elem_border}px;}"

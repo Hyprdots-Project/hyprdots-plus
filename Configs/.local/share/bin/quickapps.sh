@@ -1,7 +1,6 @@
 #!/usr/bin/env sh
 
 # set variables
-
 scrDir=`dirname "$(realpath "$0")"`
 source $scrDir/globalcontrol.sh
 roconf="~/.config/rofi/quickapps.rasi"
@@ -13,31 +12,21 @@ else
     appCount="$#"
 fi
 
-
 # set position
-
-x_mon=$( cat /sys/class/drm/*/modes | head -1  )
-y_mon=$( echo $x_mon | cut -d 'x' -f 2 )
-x_mon=$( echo $x_mon | cut -d 'x' -f 1 )
-
-x_cur=$(hyprctl cursorpos | sed 's/ //g')
-y_cur=$( echo $x_cur | cut -d ',' -f 2 )
-x_cur=$( echo $x_cur | cut -d ',' -f 1 )
-
-if [ ${x_cur} -le $(( x_mon/3 )) ] ; then
+if [ ${${cursorPosition[0]}} -le $(( ${monitorResolution[0]}/3 )) ] ; then
     x_rofi="west"
     x_offset="x-offset: 20px;"
-elif [ ${x_cur} -ge $(( x_mon/3*2 )) ] ; then
+elif [ ${${cursorPosition[0]}} -ge $(( ${monitorResolution[0]}/3*2 )) ] ; then
     x_rofi="east"
     x_offset="x-offset: -20px;"
 else
     unset x_rofi
 fi
 
-if [ ${y_cur} -le $(( y_mon/3 )) ] ; then
+if [ ${${cursorPosition[1]}} -le $(( ${monitorResolution[1]}/3 )) ] ; then
     y_rofi="north"
     y_offset="y-offset: 20px;"
-elif [ ${y_cur} -ge $(( y_mon/3*2 )) ] ; then
+elif [ ${${cursorPosition[1]}} -ge $(( ${monitorResolution[1]}/3*2 )) ] ; then
     y_rofi="south"
     y_offset="y-offset: -20px;"
 else
@@ -48,10 +37,8 @@ if [ ! -z $x_rofi ] || [ ! -z $y_rofi ] ; then
     pos="window {location: $y_rofi $x_rofi; $x_offset $y_offset}"
 fi
 
-
 # override rofi
-
-dockHeight=$(( x_mon * 3 / 100))
+dockHeight=$(( ${monitorResolution[0]} * 3 / 100))
 dockWidth=$(( dockHeight * appCount ))
 iconSize=$(( dockHeight - 4 ))
 wind_border=$(( hypr_border * 3/2 ))
@@ -59,7 +46,6 @@ r_override="window{height:${dockHeight};width:${dockWidth};border-radius:${wind_
 
 
 # launch rofi menu
-
 if [ -d /run/current-system/sw/share/applications ]; then
     appDir=/run/current-system/sw/share/applications
 else
@@ -74,4 +60,3 @@ do
 done | rofi -no-fixed-num-lines -dmenu -theme-str "${r_override}" -theme-str "${pos}" -config $roconf)
 
 $RofiSel &
-
