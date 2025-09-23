@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 
 
 #// set variables
@@ -75,10 +75,28 @@ gtkTheme="$(
 grep 'gsettings set org.gnome.desktop.interface gtk-theme' "${hydeThemeDir}/hypr.theme" | awk -F "'" '{print $((NF - 1))}'
 )"
 
+if [[ -n "$gtkTheme" ]]; then
+  gsettings set org.gnome.desktop.interface gtk-theme "$gtkTheme"
+else
+  echo "ERROR: unable to detect GTK theme"
+  exit 1
+fi
+
 gtkIcon="$(
 { grep -q "^[[:space:]]*\$ICON[-_]THEME\s*=" "${hydeThemeDir}/hypr.theme" && grep "^[[:space:]]*\$ICON[-_]THEME\s*=" "${hydeThemeDir}/hypr.theme" | cut -d '=' -f2 | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' ;} ||  
 grep 'gsettings set org.gnome.desktop.interface icon-theme' "${hydeThemeDir}/hypr.theme" | awk -F "'" '{print $(NF - 1)}'
 )"
+
+[[ -n "$gtkIcon" ]] && gsettings set org.gnome.desktop.interface icon-theme "$gtkIcon"
+
+gtkScheme="$(
+{ grep -q "^[[:space:]]*\$COLOR[-_]SCHEME\s*=" "${hydeThemeDir}/hypr.theme" && grep "^[[:space:]]*\$COLOR[-_]SCHEME\s*=" "${hydeThemeDir}/hypr.theme" | cut -d '=' -f2 | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' ;} ||  
+grep 'gsettings set org.gnome.desktop.interface color-scheme' "${hydeThemeDir}/hypr.theme" | awk -F "'" '{print $(NF - 1)}'
+)"
+
+[[ -n "$gtkScheme" ]] && gsettings set org.gnome.desktop.interface color-scheme "$gtkScheme"
+
+# TODO: Handle cursors
 
 #// qtct
 
