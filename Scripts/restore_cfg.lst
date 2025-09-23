@@ -1,5 +1,5 @@
 N|Y|${HOME}|.zshrc|zsh oh-my-zsh-git pokemon-colorscripts-git
-N|Y|${HOME}/.config|starship|zsh starship
+N|Y|${HOME}/.config|starship|starship
 N|Y|${HOME}/.config/Code/User|settings.json|visual-studio-code-bin
 N|Y|${HOME}/.config/Code - OSS/User|settings.json|code
 N|Y|${HOME}/.config|code-flags.conf|visual-studio-code-bin

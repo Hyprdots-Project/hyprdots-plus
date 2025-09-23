@@ -67,13 +67,8 @@ vim                                                    # terminal text editor
 code                                                   # ide text editor
 
 # --------------------------------------------------- // Shell
-eza|zsh                                                # file lister for zsh
-oh-my-zsh-git|zsh                                      # plugin manager for zsh
-starship|zsh oh-my-zsh-git                             # theme for zsh
-eza|fish                                               # file lister for fish
-starship|fish                                          # customizable shell prompt
+eza                                                    # file lister for shell
+starship                                               # customizable shell prompt
 fastfetch                                              # system information fetch tool
+oh-my-zsh-git|zsh                                      # plugin manager for zsh
 pokemon-colorscripts-git|zsh                           # display pokemon sprites
-
-# --------------------------------------------------- // HyDE
-hyde-cli-git                                           # cli tool to manage hyde
