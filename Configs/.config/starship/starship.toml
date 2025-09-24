@@ -6,7 +6,7 @@ format = """\
   󰣇 \
   $directory\
   $git_branch$git_commit$git_state $git_status\
-  $character\n
+  $character
 """
 right_format = """
 $singularity\
