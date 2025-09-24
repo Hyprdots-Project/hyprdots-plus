@@ -75,12 +75,7 @@ gtkTheme="$(
 grep 'gsettings set org.gnome.desktop.interface gtk-theme' "${hydeThemeDir}/hypr.theme" | awk -F "'" '{print $((NF - 1))}'
 )"
 
-if [ -n "$gtkTheme" ]; then
-    gsettings set org.gnome.desktop.interface gtk-theme "$gtkTheme"
-else
-    echo "ERROR: unable to detect GTK theme"
-    exit 1
-fi
+[ -n "$gtkTheme" ] && gsettings set org.gnome.desktop.interface gtk-theme "$gtkTheme"
 
 gtkIcon="$(
 { grep -q "^[[:space:]]*\$ICON[-_]THEME\s*=" "${hydeThemeDir}/hypr.theme" && grep "^[[:space:]]*\$ICON[-_]THEME\s*=" "${hydeThemeDir}/hypr.theme" | cut -d '=' -f2 | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' ;} ||  
