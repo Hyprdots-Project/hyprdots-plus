@@ -1,54 +1,101 @@
 #!/usr/bin/env bash
-#|---/ /+---------------------------+---/ /|#
-#|--/ /-| Script to configure shell |--/ /-|#
-#|-/ /--| Prasanth Rangan           |-/ /--|#
-#|/ /---+---------------------------+/ /---|#
+#|--------/ /+--------------------------------------------+--------/ /|#
+#|-------/ /-| Script: install_shell.sh                   |-------/ /-|#
+#|------/ /--| Description: Install user shell.           |------/ /--|#
+#|-----/ /---| Author: Marek Čupr (cupr.marek2@gmail.com) |-----/ /---|#
+#|----/ /----|--------------------------------------------|----/ /----|#
+#|---/ /-----| Version: 1.0                               |---/ /-----|#
+#|--/ /------| Created: 2025-09-28                        |--/ /------|#
+#|-/ /-------| Last Updated: 2025-09-28                   |-/ /-------|#
+#|/ /--------+--------------------------------------------+/ /--------|#
 
-scrDir=$(dirname "$(realpath "$0")")
-source "${scrDir}/global_fn.sh"
-if [ $? -ne 0 ]; then
-    echo "Error: unable to source global_fn.sh..."
-    exit 1
+#-------------------------#
+# import shared utilities #
+#-------------------------#
+if ! source "$(dirname "$(realpath "$0")")/shared_utils.sh"; then
+  printf "\033[0;31m[ERROR]\033[0m Failed to source '%s'!\n" \
+    "shared_utils.sh" >&2
+  exit 1
 fi
 
-if chk_list "myShell" "${shlList[@]}"; then
-    echo -e "\033[0;32m[SHELL]\033[0m detected // ${myShell}"
+#----------------#
+# get user shell #
+#----------------#
+if ! get_installed_package "user_shell" "${SHELL_LIST[@]}"; then
+  log_error "User shell is not installed!"
+  exit $EXIT_FAILURE
+fi
+
+#---------------------#
+# install zsh plugins #
+#---------------------#
+if is_package_installed "zsh" && is_package_installed "oh-my-zsh-git"; then
+  # Set the zsh variables
+  declare -r ZSHRC="${ZDOTDIR:-$HOME}/.zshrc"
+  declare -r ZSH_PATH="/usr/share/oh-my-zsh"
+  declare -r ZSH_PLUGINS_DIR="$ZSH_PATH/custom/plugins"
+  declare -a plugins=()
+  completions_fix=""
+
+  # Check the plugin list file
+  declare -r PLUGIN_LIST="$SRC_DIR/install_zsh.lst"
+  check_file_exist "$PLUGIN_LIST"
+
+  # Add the plugins to install
+  while IFS= read -r line; do
+    # Skip the empty lines
+    [[ -z "$line" ]] && continue
+
+    # Get the plugin name
+    plugin=$(echo "$line" | awk -F '/' '{ print $NF }')
+
+    # Clone the plugin
+    if [[ "${line:0:4}" == "http" ]] && [[ ! -d "$ZSH_PLUGINS_DIR/$plugin" ]]; then
+      print_info "Cloning '$plugin' to '$ZSH_PLUGINS_DIR/$plugin'..."
+      if sudo git clone "$line" "$ZSH_PLUGINS_DIR/$plugin"; then
+        print_success "Cloned '$plugin' to '$ZSH_PLUGINS_DIR/$plugin'."
+      else
+        print_error "Failed to clone '$plugin' to '$ZSH_PLUGINS_DIR/$plugin'!"
+        exit $EXIT_FAILURE
+      fi
+    fi
+
+    # Add the zsh plugin
+    if [[ "$plugin" == "zsh-completions" ]]
+        && ! grep -q 'fpath+=.*plugins/zsh-completions/src' "$ZSHRC"; then
+      completions_fix=$'\nfpath+=${ZSH_CUSTOM:-${ZSH:-/usr/share/oh-my-zsh}/custom}/plugins/zsh-completions/src'
+    else
+      plugins+=("$plugin")
+    fi
+  done < <(
+    # Remove comments and trim the leading/trailing whitespace
+    cut -d "#" -f 1 "$PLUGINS_LIST" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//'
+  )
+
+  # Install the zsh plugins
+  print_info "Installing the '${plugins[*]}' zsh plugins..."
+  if sed -i "/^plugins=/c\plugins=(${plugins[*]})$completions_fix" "$ZSHRC"; then
+    print_success "Installed the '${plugins[*]}' zsh plugins."
+  else
+    print_error "Failed to install the '${plugins[*]}' zsh plugins!"
+    exit $EXIT_FAILURE
+  fi
+fi
+
+#----------------#
+# set user shell #
+#----------------#
+if [[ "$(grep "/$USER:" "/etc/passwd" \
+      | awk -F '/' '{ print $NF }')" != "$user_shell" ]]; then
+  print_info "Setting '$user_shell' as default shell..."
+  if chsh -s "$(which "$user_shell")"; then
+    print_success "Set '$user_shell' as default shell."
+  else
+    print_error "Failed to set '$user_shell' as default shell!"
+    exit $EXIT_FAILURE
+  fi
 else
-    echo "Error: user shell not found"
-    exit 1
+  print_warning "Shell '$user_shell' is already set as default, skipping..."
 fi
 
-# add zsh plugins
-if pkg_installed zsh && pkg_installed oh-my-zsh-git; then
-
-    # set variables
-    Zsh_rc="${ZDOTDIR:-$HOME}/.zshrc"
-    Zsh_Path="/usr/share/oh-my-zsh"
-    Zsh_Plugins="$Zsh_Path/custom/plugins"
-    Fix_Completion=""
-
-    # generate plugins from list
-    while read r_plugin; do
-        z_plugin=$(echo "${r_plugin}" | awk -F '/' '{print $NF}')
-        if [ "${r_plugin:0:4}" == "http" ] && [ ! -d "${Zsh_Plugins}/${z_plugin}" ]; then
-            sudo git clone "${r_plugin}" "${Zsh_Plugins}/${z_plugin}"
-        fi
-        if [ "${z_plugin}" == "zsh-completions" ] && [ "$(grep 'fpath+=.*plugins/zsh-completions/src' "${Zsh_rc}" | wc -l)" -eq 0 ]; then
-            Fix_Completion='\nfpath+=${ZSH_CUSTOM:-${ZSH:-/usr/share/oh-my-zsh}/custom}/plugins/zsh-completions/src'
-        else
-            [ -z "${z_plugin}" ] || w_plugin+=" ${z_plugin}"
-        fi
-    done < <(cut -d '#' -f 1 "${scrDir}/restore_zsh.lst" | sed 's/ //g')
-
-    # update plugin array in zshrc
-    echo -e "\033[0;32m[SHELL]\033[0m installing plugins (${w_plugin} )"
-    sed -i "/^plugins=/c\plugins=(${w_plugin} )${Fix_Completion}" "${Zsh_rc}"
-fi
-
-# set shell
-if [[ "$(grep "/${USER}:" /etc/passwd | awk -F '/' '{print $NF}')" != "${myShell}" ]]; then
-    echo -e "\033[0;32m[SHELL]\033[0m changing shell to ${myShell}..."
-    chsh -s "$(which "${myShell}")"
-else
-    echo -e "\033[0;33m[SKIP]\033[0m ${myShell} is already set as shell..."
-fi
+# End of install_shell.sh

@@ -1,46 +1,75 @@
 #!/usr/bin/env bash
-#|---/ /+-------------------------------------------+---/ /|#
-#|--/ /-| Script to install aur helper, yay or paru |--/ /-|#
-#|-/ /--| Prasanth Rangan                           |-/ /--|#
-#|/ /---+-------------------------------------------+/ /---|#
+#|--------/ /+------------------------------------------------+--------/ /|#
+#|-------/ /-| Script: install_aur.sh                         |-------/ /-|#
+#|------/ /--| Description: Install AUR helper (yay or paru). |------/ /--|#
+#|-----/ /---| Author: Marek Čupr (cupr.marek2@gmail.com)     |-----/ /---|#
+#|----/ /----|------------------------------------------------|----/ /----|#
+#|---/ /-----| Version: 1.0                                   |---/ /-----|#
+#|--/ /------| Created: 2025-09-28                            |--/ /------|#
+#|-/ /-------| Last Updated: 2025-09-28                       |-/ /-------|#
+#|/ /--------+------------------------------------------------+/ /--------|#
 
-scrDir=$(dirname "$(realpath "$0")")
-source "${scrDir}/global_fn.sh"
-if [ $? -ne 0 ]; then
-    echo "Error: unable to source global_fn.sh..."
-    exit 1
+: << 'DOC'
+This script installs the specified AUR helper (defaults to paru).
+It verifies that git is installed, clones the AUR helper repository,
+and builds it locally using makepkg. The installation is skipped
+if the AUR helper is already installed.
+DOC
+
+#-------------------------#
+# import shared utilities #
+#-------------------------#
+if ! source "$(dirname "$(realpath "$0")")/shared_utils.sh"; then
+  printf "\033[0;31m[ERROR]\033[0m Failed to source '%s'!\n" \
+    "shared_utils.sh" >&2
+  exit 1
 fi
 
-if chk_list "aurhlpr" "${aurList[@]}"; then
-    echo -e "\033[0;32m[AUR]\033[0m detected // ${aurhlpr}"
-    exit 0
+#----------------------#
+# check git dependency #
+#----------------------#
+if ! is_package_installed "git"; then
+  log_error "Dependency 'git' is not installed!"
+  exit $EXIT_FAILURE
 fi
 
-aurhlpr="${1:-yay}"
-
-if [ -d "$HOME/Clone" ]; then
-    echo "~/Clone directory exists..."
-    rm -rf "$HOME/Clone/${aurhlpr}"
+#----------------#
+# get AUR helper #
+#----------------#
+if ! get_installed_package "aur_helper" "${AUR_LIST[@]}"; then
+  aur_helper="${1:-paru}"
 else
-    mkdir "$HOME/Clone"
-    echo -e "[Desktop Entry]\nIcon=default-folder-git" > "$HOME/Clone/.directory"
-    echo "~/Clone directory created..."
+  log_warning "Package '$aur_helper' is already installed, skipping..."
+  exit $EXIT_SUCCESS
 fi
 
-if pkg_installed git; then
-    git clone "https://aur.archlinux.org/${aurhlpr}.git" "$HOME/Clone/${aurhlpr}"
+#------------------#
+# clone AUR helper #
+#------------------#
+declare -r AUR_DIR="$HOME/.local/src/$aur_helper"
+if [[ ! -d "$AUR_DIR" ]]; then
+  log_info "Cloning '$aur_helper' to '$AUR_DIR'..."
+  if git clone "https://aur.archlinux.org/$aur_helper.git" "$AUR_DIR"; then
+    printf "[Desktop Entry]\nIcon=default-folder-git\n" > "$AUR_DIR/.directory"
+    log_success "Cloned '$aur_helper' to '$AUR_DIR'."
+  else
+    log_error "Failed to clone '$aur_helper' to '$AUR_DIR'!"
+    [[ -d "$AUR_DIR" ]] && rm -rf "$AUR_DIR"
+    exit $EXIT_FAILURE
+  fi
 else
-    echo "git dependency is not installed..."
-    exit 1
+  log_warning "Directory '$AUR_DIR' already exists, skipping clone..."
 fi
 
-cd "$HOME/Clone/${aurhlpr}"
-makepkg ${use_default} -si
-
-if [ $? -eq 0 ]; then
-    echo "${aurhlpr} aur helper installed..."
-    exit 0
+#--------------------#
+# install AUR helper #
+#--------------------#
+log_info "Installing '$aur_helper'..."
+if cd "$AUR_DIR" && makepkg -si --noconfirm; then
+  log_success "Installed '$aur_helper'."
 else
-    echo "${aurhlpr} installation failed..."
-    exit 1
+  log_error "Failed to install '$aur_helper'!"
+  exit $EXIT_FAILURE
 fi
+
+# End of install_aur.sh

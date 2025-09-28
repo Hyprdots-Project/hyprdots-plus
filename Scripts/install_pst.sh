@@ -1,80 +1,82 @@
 #!/usr/bin/env bash
-#|---/ /+--------------------------------------+---/ /|#
-#|--/ /-| Script to apply post install configs |--/ /-|#
-#|-/ /--| Prasanth Rangan                      |-/ /--|#
-#|/ /---+--------------------------------------+/ /---|#
+#|--------/ /+--------------------------------------------+--------/ /|#
+#|-------/ /-| Script: install_post.sh                    |-------/ /-|#
+#|------/ /--| Description: Post-installation script.     |------/ /--|#
+#|-----/ /---| Author: Marek Čupr (cupr.marek2@gmail.com) |-----/ /---|#
+#|----/ /----|--------------------------------------------|----/ /----|#
+#|---/ /-----| Version: 1.0                               |---/ /-----|#
+#|--/ /------| Created: 2025-09-26                        |--/ /------|#
+#|-/ /-------| Last Updated: 2025-09-26                   |-/ /-------|#
+#|/ /--------+--------------------------------------------+/ /--------|#
 
-scrDir=$(dirname "$(realpath "$0")")
-source "${scrDir}/global_fn.sh"
-if [ $? -ne 0 ]; then
-    echo "Error: unable to source global_fn.sh..."
-    exit 1
+#-------------------------#
+# import shared utilities #
+#-------------------------#
+if ! source "$(dirname "$(realpath "$0")")/shared_utils.sh"; then
+  printf "\033[0;31m[ERROR]\033[0m Failed to source '%s'!\n" \
+    "shared_utils.sh" >&2
+  exit 1
 fi
 
-# sddm
-if pkg_installed sddm; then
+#----------------#
+# configure sddm #
+#----------------#
+if is_package_installed "sddm"; then
+  # Ensure the sddm config directory exists
+  [[ ! -d "/etc/sddm.conf.d" ]] && sudo mkdir -p "/etc/sddm.conf.d"
 
-    echo -e "\033[0;32m[DISPLAYMANAGER]\033[0m detected // sddm"
-    if [ ! -d /etc/sddm.conf.d ]; then
-        sudo mkdir -p /etc/sddm.conf.d
-    fi
+  # Check if sddm is already configured
+  if [[ ! -f "/etc/sddm.conf.d/kde_settings.t2.bkp" ]]; then
+    log_info "Configuring 'sddm'..."
+    printf "Select the sddm theme:\n[1] Candy\n[2] Corners\n"
+    read -p " :: Enter option number : " sddm_option
 
-    if [ ! -f /etc/sddm.conf.d/kde_settings.t2.bkp ]; then
-        echo -e "\033[0;32m[DISPLAYMANAGER]\033[0m configuring sddm..."
-        echo -e "Select sddm theme:\n[1] Candy\n[2] Corners"
-        read -p " :: Enter option number : " sddmopt
+    # Get the sddm theme
+    case $sddm_option in
+      1) sddm_theme="Candy" ;;
+      *) sddm_theme="Corners" ;;
+    esac
 
-        case $sddmopt in
-        1) sddmtheme="Candy" ;;
-        *) sddmtheme="Corners" ;;
-        esac
+    # Set the sddm theme
+    sudo tar -xzf "$CLONE_DIR/Source/arcs/Sddm_$sddm_theme.tar.gz" -C "/usr/share/sddm/themes"
+    sudo touch "/etc/sddm.conf.d/kde_settings.conf"
+    sudo cp "/etc/sddm.conf.d/kde_settings.conf" "/etc/sddm.conf.d/kde_settings.t2.bkp"
+    sudo cp "/usr/share/sddm/themes/$sddm_theme/kde_settings.conf" "/etc/sddm.conf.d"
+  else
+    log_warning "Package 'sddm' is already configured, skipping..."
+  fi
 
-        sudo tar -xzf ${cloneDir}/Source/arcs/Sddm_${sddmtheme}.tar.gz -C /usr/share/sddm/themes/
-        sudo touch /etc/sddm.conf.d/kde_settings.conf
-        sudo cp /etc/sddm.conf.d/kde_settings.conf /etc/sddm.conf.d/kde_settings.t2.bkp
-        sudo cp /usr/share/sddm/themes/${sddmtheme}/kde_settings.conf /etc/sddm.conf.d/
+  # Set the user icon
+  if [[ ! -f /usr/share/sddm/faces/$USER.face.icon ]] && [[ -f $CLONE_DIR}/Source/misc/$USER.face.icon ]]; then
+    sudo cp "$CLONE_DIR/Source/misc/$USER.face.icon" "/usr/share/sddm/faces/"
+    echo -e "\033[0;32m[DISPLAYMANAGER]\033[0m avatar set for $USER..."
+  fi
+else
+  log_warning "Package 'sddm' is not installed, skipping configuration..."
+fi
+
+#-------------------#
+# configure dolphin #
+#-------------------#
+if is_package_installed "dolphin" && is_package_installed "xdg-utils"; then
+  # Check if dolphin is already set as the default file explorer
+  if [[ "$(xdg-mime query default inode/directory)" != "org.kde.dolphin.desktop" ]]; then
+    log_info "Setting 'dolphin' as the default file explorer..."
+    # Set dolphin as the default file explorer
+    if xdg-mime default org.kde.dolphin.desktop inode/directory; then
+      log_success "Set 'dolphin' as the default file explorer."
     else
-        echo -e "\033[0;33m[SKIP]\033[0m sddm is already configured..."
+      log_error "Failed to set 'dolphin' as the default file explorer!"
+      exit $EXIT_FAILURE
     fi
-
-    if [ ! -f /usr/share/sddm/faces/${USER}.face.icon ] && [ -f ${cloneDir}/Source/misc/${USER}.face.icon ]; then
-        sudo cp ${cloneDir}/Source/misc/${USER}.face.icon /usr/share/sddm/faces/
-        echo -e "\033[0;32m[DISPLAYMANAGER]\033[0m avatar set for ${USER}..."
-    fi
-
+  else
+    log_warning "Package 'dolphin' is already set as the default file explorer, skipping..."
+  fi
 else
-    echo -e "\033[0;33m[WARNING]\033[0m sddm is not installed..."
+  log_warning "Package 'dolphin' is not installed, skipping configuration..."
 fi
 
-# dolphin
-if pkg_installed dolphin && pkg_installed xdg-utils; then
-
-    echo -e "\033[0;32m[FILEMANAGER]\033[0m detected // dolphin"
-    xdg-mime default org.kde.dolphin.desktop inode/directory
-    echo -e "\033[0;32m[FILEMANAGER]\033[0m setting" `xdg-mime query default "inode/directory"` "as default file explorer..."
-
-else
-    echo -e "\033[0;33m[WARNING]\033[0m dolphin is not installed..."
-fi
-
-# shell
-"${scrDir}/restore_shl.sh"
-
-# flatpak
-if ! pkg_installed flatpak; then
-
-    echo -e "\033[0;32m[FLATPAK]\033[0m flatpak application list..."
-    awk -F '#' '$1 != "" {print "["++count"]", $1}' "${scrDir}/.extra/custom_flat.lst"
-    prompt_timer 60 "Install these flatpaks? [Y/n]"
-    fpkopt=${promptIn,,}
-
-    if [ "${fpkopt}" = "y" ]; then
-        echo -e "\033[0;32m[FLATPAK]\033[0m installing flatpaks..."
-        "${scrDir}/.extra/install_fpk.sh"
-    else
-        echo -e "\033[0;33m[SKIP]\033[0m installing flatpaks..."
-    fi
-
-else
-    echo -e "\033[0;33m[SKIP]\033[0m flatpak is already installed..."
-fi
+#--------------------#
+# install user shell #
+#--------------------#
+"$SRC_DIR/install_shell.sh"
