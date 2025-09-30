@@ -18,23 +18,23 @@ fi
 
 aurhlpr="${1:-yay}"
 
-if [ -d "$HOME/Clone" ]; then
-    echo "~/Clone directory exists..."
-    rm -rf "$HOME/Clone/${aurhlpr}"
+if [ -d "$HOME/.local/src/${aurhlpr}" ]; then
+    echo "~/.local/src/${aurhlpr} directory exists..."
+    rm -rf "$HOME/.local/src/${aurhlpr}"
 else
-    mkdir "$HOME/Clone"
-    echo -e "[Desktop Entry]\nIcon=default-folder-git" > "$HOME/Clone/.directory"
-    echo "~/Clone directory created..."
+    mkdir "$HOME/.local/src/${aurhlpr}"
+    echo -e "[Desktop Entry]\nIcon=default-folder-git" > "$HOME/.local/src/${aurhlpr}/.directory"
+    echo "~/.local/src/${aurhlpr} directory created..."
 fi
 
 if pkg_installed git; then
-    git clone "https://aur.archlinux.org/${aurhlpr}.git" "$HOME/Clone/${aurhlpr}"
+    git clone "https://aur.archlinux.org/${aurhlpr}.git" "$HOME/.local/src/${aurhlpr}"
 else
     echo "git dependency is not installed..."
     exit 1
 fi
 
-cd "$HOME/Clone/${aurhlpr}"
+cd "$HOME/.local/src/${aurhlpr}"
 makepkg ${use_default} -si
 
 if [ $? -eq 0 ]; then
