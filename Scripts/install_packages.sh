@@ -1,45 +1,46 @@
 #!/usr/bin/env bash
 #|--------/ /+--------------------------------------------+--------/ /|#
 #|-------/ /-| Script: install_packages.sh                |-------/ /-|#
-#|------/ /--| Description: Install packages.             |------/ /--|#
+#|------/ /--| Description: Install the packages.         |------/ /--|#
 #|-----/ /---| Author: Marek Čupr (cupr.marek2@gmail.com) |-----/ /---|#
 #|----/ /----|--------------------------------------------|----/ /----|#
 #|---/ /-----| Version: 1.0                               |---/ /-----|#
-#|--/ /------| Created: 2025-09-28                        |--/ /------|#
-#|-/ /-------| Last Updated: 2025-09-28                   |-/ /-------|#
+#|--/ /------| Created: 2025-10-01                        |--/ /------|#
+#|-/ /-------| Last Updated: 2025-10-01                   |-/ /-------|#
 #|/ /--------+--------------------------------------------+/ /--------|#
 
 : << 'DOC'
-This script reads a list of packages from a file (defaults to 'install_packages.lst'),
+This script reads a list of packages from the specified file
+(defaults to 'install_packages.lst' if no argument is provided),
 iterates through them, and installs each package.
 It ignores comments and empty lines in the package list file,
-and skips packages where its dependency is not satisfied.
+and skips packages whose dependencies are not satisfied.
 DOC
 
 #-------------------------#
 # import shared utilities #
 #-------------------------#
 if ! source "$(dirname "$(realpath "$0")")/shared_utils.sh"; then
-  printf "\033[0;31m[ERROR]\033[0m Failed to source '%s'!\n" \
-    "shared_utils.sh" >&2
+  printf '%b\n' \
+    "\033[0;31m[ERROR]\033[0m Failed to source 'shared_utils.sh'!" >&2
   exit 1
 fi
 
 #--------------------#
 # install AUR helper #
 #--------------------#
-"$SCR_DIR/install_aur.sh" "$get_aur"
+"$SCR_DIR/install_aur.sh" "$aur_option"
 get_installed_package "aur_helper" "${AUR_LIST[@]}"
 
 #-------------------------#
 # check package list file #
 #-------------------------#
-declare -r PACKAGE_LIST="${1:-"$SRC_DIR/install_packages.lst"}"
+readonly PACKAGE_LIST="${1:-"$SRC_DIR/install_packages.lst"}"
 check_file_exists "$PACKAGE_LIST"
 
-#-----------------------#
-# prepare package lists #
-#-----------------------#
+#------------------------#
+# declare package arrays #
+#------------------------#
 declare -a arch_packages=()
 declare -a aur_packages=()
 
@@ -50,37 +51,36 @@ while IFS='|' read -r package deps; do
   # Skip empty lines
   [[ -z "$package" ]] && continue
 
-  # Check the dependencies
+  # Check the package dependencies
   if [[ -n "$deps" ]]; then
-    # Trim trailing whitespace
-    deps="${deps%"${deps##*[![:space:]]}"}"
+    for dep in $deps; do
+      # Check if the dependency is listed in the package list
+      is_listed=$(cut -d '#' -f 1 "$PACKAGE_LIST" \
+        | sed 's/^[[:space:]]*//' \
+        | awk -F '|' -v dep="$dep" \
+        '$1 == dep { print true; exit } END { print false }'
+      )
 
-    # Iterate through the dependencies
-    while read -r dep; do
-      # Check if the dependency listed for installation
-      is_listed=$(cut -d '#' -f 1 "$PACKAGE_LIST" | awk -F '|' -v dep="$dep" '{ if ($1 == dep) { print true; exit } }')
-
-      if ${is_installed:-false}; then
-        # Check if the dependency is installed
-        if ! is_package_installed "$package_dep"; then
-          log_warning "Package '$package' is missing '$dependency' dependency, skipping..."
-          continue 2
-        fi
+      # Check if the dependency is satisfied
+      if ! $is_listed && ! is_package_installed "$dep"; then
+        log_warning \
+          "Package '$package' is missing dependency '$dep', skipping..."
+        continue 2
       fi
-    done < <(echo "$deps" | xargs -n 1)
+    done
   fi
 
-  # Add the packages to install
+  # Add the package to install
   if is_package_installed "$package"; then
-    log_warning "Package '$package' is already installed, skipping..." 
+    log_warning "Package '$package' is already installed, skipping..."
   elif is_package_available "$package"; then
     log_info "Adding '$package' from official arch repo..."
     arch_packages+=("$package")
-  elif is_aur_available "$package"; then
+  elif is_aur_package_available "$package"; then
     log_info "Adding '$package' from arch user repo..."
     aur_packages+=("$package")
   else
-    log_error "Package '$package' is not known!"
+    log_error "Package '$package' is unknown!"
     exit $EXIT_FAILURE
   fi
 done < <(
@@ -101,22 +101,22 @@ if [[ ${#arch_packages[@]} -gt 0 ]]; then
     exit $EXIT_FAILURE
   fi
 else
-  log_warning "There are no official packages to install, skipping..."
+  log_warning "No official packages to install, skipping..."
 fi
 
 #----------------------#
 # install AUR packages #
 #----------------------#
 if [[ ${#aur_packages[@]} -gt 0 ]]; then
-  log_info "Installing 'AUR' packages..."
+  log_info "Installing AUR packages..."
   if "$aur_helper" "$use_default" -S "${aur_packages[@]}"; then
-    log_success "Installed 'AUR' packages."
+    log_success "Installed AUR packages."
   else
-    log_error "Failed to install 'AUR' packages!"
+    log_error "Failed to install AUR packages!"
     exit $EXIT_FAILURE
   fi
 else
-  log_warning "There are no 'AUR' packages to install, skipping..."
+  log_warning "No AUR packages to install, skipping..."
 fi
 
 # End of install_packages.sh

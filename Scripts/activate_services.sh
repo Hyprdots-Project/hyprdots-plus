@@ -1,34 +1,34 @@
 #!/usr/bin/env bash
 #|--------/ /+--------------------------------------------+--------/ /|#
 #|-------/ /-| Script: activate_services.sh               |-------/ /-|#
-#|------/ /--| Description: Activate system services.     |------/ /--|#
+#|------/ /--| Description: Activate the system services. |------/ /--|#
 #|-----/ /---| Author: Marek Čupr (cupr.marek2@gmail.com) |-----/ /---|#
 #|----/ /----|--------------------------------------------|----/ /----|#
-#|---/ /-----| Version: 1.0                               |---/ /-----|#
+#|---/ /-----| Version: 1.1                               |---/ /-----|#
 #|--/ /------| Created: 2025-09-28                        |--/ /------|#
-#|-/ /-------| Last Updated: 2025-09-28                   |-/ /-------|#
+#|-/ /-------| Last Updated: 2025-10-01                   |-/ /-------|#
 #|/ /--------+--------------------------------------------+/ /--------|#
 
 : << 'DOC'
 This script reads a list of system services from 'activate_services.lst',
 iterates through them, and activates each service (enables and starts it).
 It ignores comments and empty lines in the service list file,
-and skips the already active services.
+and skips services that are already active.
 DOC
 
 #-------------------------#
 # import shared utilities #
 #-------------------------#
 if ! source "$(dirname "$(realpath "$0")")/shared_utils.sh"; then
-  printf "\033[0;31m[ERROR]\033[0m Failed to source '%s'!\n" \
-    "shared_utils.sh" >&2
+  printf '%b\n' \
+    "\033[0;31m[ERROR]\033[0m Failed to source 'shared_utils.sh'!" >&2
   exit 1
 fi
 
 #-------------------------#
 # check service list file #
 #-------------------------#
-declare -r SERVICE_LIST="$SRC_DIR/activate_services.lst"
+readonly SERVICE_LIST="$SRC_DIR/activate_services.lst"
 check_file_exists "$SERVICE_LIST"
 
 #--------------------------#

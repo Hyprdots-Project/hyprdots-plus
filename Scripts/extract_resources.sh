@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
-#|--------/ /+--------------------------------------------+--------/ /|#
-#|-------/ /-| Script: extract_resources.sh               |-------/ /-|#
-#|------/ /--| Description: Extract resource archives.    |------/ /--|#
-#|-----/ /---| Author: Marek Čupr (cupr.marek2@gmail.com) |-----/ /---|#
-#|----/ /----|--------------------------------------------|----/ /----|#
-#|---/ /-----| Version: 1.0                               |---/ /-----|#
-#|--/ /------| Created: 2025-09-28                        |--/ /------|#
-#|-/ /-------| Last Updated: 2025-09-28                   |-/ /-------|#
-#|/ /--------+--------------------------------------------+/ /--------|#
+#|--------/ /+---------------------------------------------+--------/ /|#
+#|-------/ /-| Script: extract_resources.sh                |-------/ /-|#
+#|------/ /--| Description: Extract the resource archives. |------/ /--|#
+#|-----/ /---| Author: Marek Čupr (cupr.marek2@gmail.com)  |-----/ /---|#
+#|----/ /----|---------------------------------------------|----/ /----|#
+#|---/ /-----| Version: 1.1                                |---/ /-----|#
+#|--/ /------| Created: 2025-09-28                         |--/ /------|#
+#|-/ /-------| Last Updated: 2025-10-01                    |-/ /-------|#
+#|/ /--------+---------------------------------------------+/ /--------|#
 
 : << 'DOC'
 This script reads a list of resource archives from 'extract_resources.lst',
@@ -20,15 +20,15 @@ DOC
 # import shared utilities #
 #-------------------------#
 if ! source "$(dirname "$(realpath "$0")")/shared_utils.sh"; then
-  printf "\033[0;31m[ERROR]\033[0m Failed to source '%s'!\n" \
-    "shared_utils.sh" >&2
+  printf '%b\n' \
+    "\033[0;31m[ERROR]\033[0m Failed to source 'shared_utils.sh'!" >&2
   exit 1
 fi
 
 #--------------------------#
 # check resource list file #
 #--------------------------#
-declare -r RESOURCE_LIST="$SRC_DIR/extract_resources.lst"
+readonly RESOURCE_LIST="$SRC_DIR/extract_resources.lst"
 check_file_exists "$RESOURCE_LIST"
 
 #---------------------------#
@@ -77,7 +77,7 @@ done < <(
 # rebuild font cache #
 #--------------------#
 log_info "Rebuilding font cache..."
-if fc-cache -f; then
+if sudo fc-cache -f; then
   log_success "Rebuilt font cache."
 else
   log_error "Failed to rebuild font cache!"

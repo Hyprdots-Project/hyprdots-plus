@@ -1,0 +1,74 @@
+# --------------------------------------------------- // System
+blueman                                                # bluetooth manager gui
+bluez                                                  # bluetooth protocol stack
+bluez-utils                                            # bluetooth utility cli
+brightnessctl                                          # screen brightness control
+gst-plugin-pipewire                                    # pipewire gstreamer client
+network-manager-applet                                 # network manager system tray utility
+networkmanager                                         # network manager
+pamixer                                                # pulseaudio cli mixer
+pavucontrol                                            # pulseaudio volume control
+pipewire-alsa                                          # pipewire alsa client
+pipewire-audio                                         # pipewire audio client
+pipewire                                               # audio/video server
+pipewire-jack                                          # pipewire jack client
+pipewire-pulse                                         # pipewire pulseaudio client
+udiskie                                                # manage removable media
+wireplumber                                            # pipewire session manager
+
+# --------------------------------------------------- // Display Manager
+qt5-graphicaleffects                                   # for sddm theme effects
+qt5-quickcontrols2                                     # for sddm theme ui elements
+qt5-quickcontrols                                      # for sddm theme ui elements
+sddm                                                   # display manager for KDE plasma
+
+# --------------------------------------------------- // Window Manager
+cliphist                                               # clipboard manager
+dunst                                                  # notification daemon
+grimblast-git                                          # screenshot tool
+hyprland                                               # wlroots-based wayland compositor
+hyprpicker                                             # color picker
+rofi                                                   # application launcher
+slurp                                                  # region select for screenshot/screenshare
+swappy                                                 # screenshot editor
+swaylock-effects-git                                   # lock screen
+swww                                                   # wallpaper
+waybar                                                 # system bar
+wlogout                                                # logout menu
+
+# --------------------------------------------------- // Dependencies
+ffmpegthumbs                                           # for dolphin video thumbnails
+imagemagick                                            # for image processing
+jq                                                     # for json processing
+kde-cli-tools                                          # for dolphin file type defaults
+libnotify                                              # for notifications
+pacman-contrib                                         # for system update check
+parallel                                               # for parallel processing
+polkit-gnome                                           # authentication agent
+python-pyamdgpuinfo                                    # for amd gpu info
+qt5-imageformats                                       # for dolphin image thumbnails
+xdg-desktop-portal-hyprland                            # xdg desktop portal for hyprland
+
+# --------------------------------------------------- // Theming
+kvantum-qt5                                            # svg based qt5 theme engine
+kvantum                                                # svg based qt6 theme engine
+nwg-look                                               # gtk configuration tool
+qt5ct                                                  # qt5 configuration tool
+qt5-wayland                                            # wayland support in qt5
+qt6ct                                                  # qt6 configuration tool
+qt6-wayland                                            # wayland support in qt6
+
+# --------------------------------------------------- // Applications
+ark                                                    # kde file archiver
+code                                                   # ide text editor
+dolphin                                                # kde file manager
+firefox                                                # browser
+kitty                                                  # terminal
+vim                                                    # terminal text editor
+
+# --------------------------------------------------- // Shell
+eza                                                    # file lister for shell
+fastfetch                                              # system information fetch tool
+oh-my-zsh-git|zsh                                      # plugin manager for zsh
+pokemon-colorscripts-git|zsh                           # display pokemon sprites
+starship                                               # customizable shell prompt

@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
-#|--------/ /+------------------------------------------------+--------/ /|#
-#|-------/ /-| Script: install_aur.sh                         |-------/ /-|#
-#|------/ /--| Description: Install AUR helper (yay or paru). |------/ /--|#
-#|-----/ /---| Author: Marek Čupr (cupr.marek2@gmail.com)     |-----/ /---|#
-#|----/ /----|------------------------------------------------|----/ /----|#
-#|---/ /-----| Version: 1.0                                   |---/ /-----|#
-#|--/ /------| Created: 2025-09-28                            |--/ /------|#
-#|-/ /-------| Last Updated: 2025-09-28                       |-/ /-------|#
-#|/ /--------+------------------------------------------------+/ /--------|#
+#|--------/ /+----------------------------------------------------+--------/ /|#
+#|-------/ /-| Script: install_aur.sh                             |-------/ /-|#
+#|------/ /--| Description: Install the AUR helper (yay or paru). |------/ /--|#
+#|-----/ /---| Author: Marek Čupr (cupr.marek2@gmail.com)         |-----/ /---|#
+#|----/ /----|----------------------------------------------------|----/ /----|#
+#|---/ /-----| Version: 1.1                                       |---/ /-----|#
+#|--/ /------| Created: 2025-09-28                                |--/ /------|#
+#|-/ /-------| Last Updated: 2025-10-01                           |-/ /-------|#
+#|/ /--------+----------------------------------------------------+/ /--------|#
 
 : << 'DOC'
 This script installs the specified AUR helper (defaults to paru).
@@ -20,8 +20,8 @@ DOC
 # import shared utilities #
 #-------------------------#
 if ! source "$(dirname "$(realpath "$0")")/shared_utils.sh"; then
-  printf "\033[0;31m[ERROR]\033[0m Failed to source '%s'!\n" \
-    "shared_utils.sh" >&2
+  printf '%b\n' \
+    "\033[0;31m[ERROR]\033[0m Failed to source 'shared_utils.sh'!" >&2
   exit 1
 fi
 
@@ -46,8 +46,12 @@ fi
 #------------------#
 # clone AUR helper #
 #------------------#
-declare -r AUR_DIR="$HOME/.local/src/$aur_helper"
+readonly AUR_DIR="$HOME/.local/src/$aur_helper"
 if [[ ! -d "$AUR_DIR" ]]; then
+  # Ensure the parent directory exists
+  mkdir -p "$(dirname "$AUR_DIR")"
+
+  # Clone the AUR helper
   log_info "Cloning '$aur_helper' to '$AUR_DIR'..."
   if git clone "https://aur.archlinux.org/$aur_helper.git" "$AUR_DIR"; then
     printf "[Desktop Entry]\nIcon=default-folder-git\n" > "$AUR_DIR/.directory"
@@ -65,7 +69,7 @@ fi
 # install AUR helper #
 #--------------------#
 log_info "Installing '$aur_helper'..."
-if cd "$AUR_DIR" && makepkg -si --noconfirm; then
+if cd "$AUR_DIR" && makepkg -si "$use_default"; then
   log_success "Installed '$aur_helper'."
 else
   log_error "Failed to install '$aur_helper'!"
