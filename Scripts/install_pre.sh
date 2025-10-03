@@ -77,21 +77,19 @@ fi
 #-------------------#
 if is_package_installed "systemd" && is_nvidia_detected && \
    [[ $(bootctl status 2> /dev/null \
-     | awk '{if ($1 == "Product:") print $2}') == "systemd-boot" ]]; then
+      | awk '{if ($1 == "Product:") print $2}') == "systemd-boot" ]]; then
+  if [[ $(ls -1 /boot/loader/entries/*.conf.t2.bkp 2>/dev/null | wc -l) \
+     -ne $(ls -1 /boot/loader/entries/*.conf 2>/dev/null | wc -l) ]]; then
+    log_info "Configuring 'systemd'..."
 
-  log_info "Configuring 'systemd'..."
-
-  if [[ $(ls -l /boot/loader/entries/*.conf.t2.bkp 2>/dev/null | wc -l) \
-     -ne $(ls -l /boot/loader/entries/*.conf 2> /dev/null | wc -l) ]]; then
-
-    echo "nvidia detected, adding nvidia_drm.modeset=1 to boot option..."
-    find "/boot/loader/entries/" -type f -name "*.conf" | while read imgconf; do
+    find "/boot/loader/entries/" -type f -name "*.conf" | while read -r imgconf; do
       sudo cp "$imgconf" "$imgconf.t2.bkp"
       sdopt=$(grep -w "^options" "$imgconf" \
         | sed 's/\b quiet\b//g' \
         | sed 's/\b splash\b//g' \
         | sed 's/\b nvidia_drm.modeset=.\b//g')
-      sudo sed -i "/^options/c$sdopt quiet splash nvidia_drm.modeset=1" "$imgconf"
+      sudo sed -i "/^options/c$options quiet splash nvidia_drm.modeset=1" \
+        "$imgconf"
     done
 
     log_success "Configured 'systemd'."
@@ -106,14 +104,18 @@ fi
 if [[ -f "/etc/pacman.conf" ]] && [[ ! -f "/etc/pacman.conf.t2.bkp" ]]; then
   log_info "Configuring 'pacman'..."
 
-  # Add the enhancements
+  # Backup the config
   sudo cp "/etc/pacman.conf" "/etc/pacman.conf.t2.bkp"
-  sudo sed -i '/^#Color/c\Color\nILoveCandy' \
-              '/^#VerbosePkgLists/c\VerbosePkgLists' \
-              '/^#ParallelDownloads/c\ParallelDownloads = 5' "/etc/pacman.conf"
+
+  # Enable enhancements
+  sudo sed -i \
+    -e '/^#Color/c\Color\nILoveCandy' \
+    -e '/^#VerbosePkgLists/c\VerbosePkgLists' \
+    -e '/^#ParallelDownloads/c\ParallelDownloads = 5' \
+    "/etc/pacman.conf"
   sudo sed -i '/^#\[multilib\]/,+1 s/^#//' "/etc/pacman.conf"
 
-  # Refresh the database
+  # Refresh database
   sudo pacman -Syyu
   sudo pacman -Fy
 

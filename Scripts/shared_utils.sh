@@ -140,7 +140,7 @@ done
 
 print_usage() {
   cat << EOF
-A Hyprdots++ installation script.
+A 'Hyprdots++' installation script.
 
 Usage: $(basename "$0") [OPTIONS] [FILE]
 

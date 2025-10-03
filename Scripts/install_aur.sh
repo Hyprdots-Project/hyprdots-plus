@@ -4,9 +4,9 @@
 #|------/ /--| Description: Install the AUR helper (yay or paru). |------/ /--|#
 #|-----/ /---| Author: Marek Čupr (cupr.marek2@gmail.com)         |-----/ /---|#
 #|----/ /----|----------------------------------------------------|----/ /----|#
-#|---/ /-----| Version: 1.1                                       |---/ /-----|#
+#|---/ /-----| Version: 1.2                                       |---/ /-----|#
 #|--/ /------| Created: 2025-09-28                                |--/ /------|#
-#|-/ /-------| Last Updated: 2025-10-01                           |-/ /-------|#
+#|-/ /-------| Last Updated: 2025-10-03                           |-/ /-------|#
 #|/ /--------+----------------------------------------------------+/ /--------|#
 
 : << 'DOC'
@@ -47,9 +47,12 @@ fi
 # clone AUR helper #
 #------------------#
 readonly AUR_DIR="$HOME/.local/src/$aur_helper"
+readonly AUR_PARENT_DIR="$(dirname "$AUR_DIR")"
+
+# Check if the AUR directory already exists
 if [[ ! -d "$AUR_DIR" ]]; then
   # Ensure the parent directory exists
-  mkdir -p "$(dirname "$AUR_DIR")"
+  [[ ! -d "$AUR_PARENT_DIR" ]] && mkdir -p "$AUR_PARENT_DIR"
 
   # Clone the AUR helper
   log_info "Cloning '$aur_helper' to '$AUR_DIR'..."
